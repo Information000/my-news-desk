@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>マイ・ニュースデスク</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 時計つきの帯ヘッダー → カテゴリ切替 → 日付ごとにまとめた記事リスト（1カラム、読みやすい幅） */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6676; --line:#dde1e8;
+  --accent:#23408e; --accent-soft:#e6ebf7;
+  --c-acn:#7a2bb5; --c-acn-bg:#f2e9fa;
+  --c-ed:#9a5b0b; --c-ed-bg:#fbf0de;
+  --c-law:#0f6b5c; --c-law-bg:#e1f3ef;
+  --c-cy:#b4232f; --c-cy-bg:#fbe5e6;
+  --c-mk:#1d5fa8; --c-mk-bg:#e3eefa;
+  --new:#c2410c;
+  --f-display:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151d; --surface:#181e29; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2a3240;
+  --accent:#8ea8ff; --accent-soft:#1f2a46;
+  --c-acn:#c99af0; --c-acn-bg:#2c1f3b;
+  --c-ed:#f0b35c; --c-ed-bg:#33281a;
+  --c-law:#6fd3bd; --c-law-bg:#14312b;
+  --c-cy:#ff8a92; --c-cy-bg:#3a1c20;
+  --c-mk:#7fb6f5; --c-mk-bg:#16283d;
+  --new:#fb923c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151d; --surface:#181e29; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2a3240;
+  --accent:#8ea8ff; --accent-soft:#1f2a46;
+  --c-acn:#c99af0; --c-acn-bg:#2c1f3b;
+  --c-ed:#f0b35c; --c-ed-bg:#33281a;
+  --c-law:#6fd3bd; --c-law-bg:#14312b;
+  --c-cy:#ff8a92; --c-cy-bg:#3a1c20;
+  --c-mk:#7fb6f5; --c-mk-bg:#16283d;
+  --new:#fb923c; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 20px;padding-block:16px 10px}
+h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.02em;text-wrap:balance}
+.date-line{font-size:13px;color:var(--muted)}
+.clock{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.clock .t{font-size:24px;font-weight:500;letter-spacing:.02em}
+.clock .s{font-size:12px;color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.dot.live{background:var(--c-law);box-shadow:0 0 0 0 var(--c-law);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c-law) 60%,transparent)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-block:4px 12px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1 1 auto}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 13px var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.tab .n{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.tab[aria-pressed="true"] .n{color:var(--surface);opacity:.8}
+.tab:focus-visible,.search:focus-visible,.item a:focus-visible,.more:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.search{flex:0 1 220px;min-width:0;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 10px;font:14px var(--f-body)}
+
+main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
+.day h2{margin:0 0 8px;font-family:var(--f-display);font-weight:600;font-size:17px;display:flex;gap:10px;align-items:baseline}
+.day h2 small{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:400}
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:14px 16px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.chip{grid-row:1/3;align-self:start;font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:4px;white-space:nowrap;margin-top:3px}
+.chip.accenture{color:var(--c-acn);background:var(--c-acn-bg)}
+.chip.editorial{color:var(--c-ed);background:var(--c-ed-bg)}
+.chip.infolaw{color:var(--c-law);background:var(--c-law-bg)}
+.chip.cyber{color:var(--c-cy);background:var(--c-cy-bg)}
+.chip.market{color:var(--c-mk);background:var(--c-mk-bg)}
+.body{min-width:0}
+.item .ttl{color:var(--ink);text-decoration:none;font-weight:700;font-size:16px;line-height:1.5}
+.item .ttl:hover{color:var(--accent);text-decoration:underline}
+.item.read .ttl{color:var(--muted);font-weight:500}
+.sum{margin:5px 0 0;color:var(--ink);font-size:14.5px;line-height:1.75;max-width:65ch}
+.item.read .sum{color:var(--muted)}
+.meta{margin-top:6px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.more{color:var(--accent);font-weight:700;text-decoration:none;font-size:13px;margin-left:auto;white-space:nowrap}
+.more:hover{text-decoration:underline}
+.meta .new{color:var(--new);font-weight:700;letter-spacing:.05em}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:28px 20px;color:var(--muted);text-align:center}
+.empty b{color:var(--ink);display:block;margin-bottom:4px}
+.foot{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+.linkbtn{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
+@media (max-width:520px){h1{font-size:22px}.clock .t{font-size:20px}.search{flex-basis:100%}.item{grid-template-columns:1fr}.chip{grid-row:auto;justify-self:start}}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>マイ・ニュースデスク</h1>
+        <div class="date-line" id="today">—</div>
+      </div>
+      <div class="clock">
+        <div class="t" id="clock">--:--:--</div>
+        <div class="s"><span class="dot" id="dot"></span><span id="status">接続中…</span></div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="tabs" role="toolbar" aria-label="カテゴリ" id="tabs"></div>
+      <input class="search" id="q" type="search" placeholder="キーワードで絞り込み" aria-label="キーワードで絞り込み">
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <main id="main">
+    <div class="empty"><b>記事を読み込んでいます</b>アクセンチュアのニュースリリース、毎日新聞の社説、情報法、サイバー、FX・株式の記事が要約つきでここに並びます。</div>
+  </main>
+  <div class="foot" style="padding-block:0 32px">
+    <span id="lastRun">最終取得: —</span>
+    <button class="linkbtn" id="clearRead" type="button">既読をリセット</button>
+  </div>
+</div>
+
+<script>
+const CATS=[
+  {id:"all",label:"すべて"},
+  {id:"accenture",label:"アクセンチュア"},
+  {id:"editorial",label:"毎日新聞 社説"},
+  {id:"infolaw",label:"情報法"},
+  {id:"cyber",label:"サイバー"},
+  {id:"market",label:"FX・株式"}
+];
+const LABEL=Object.fromEntries(CATS.map(c=>[c.id,c.label]));
+let items=[], meta=null, cat="all", q="", connected=false;
+
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let readSet=new Set(store.get("nd-read",[]));
+cat=store.get("nd-cat","all"); if(!LABEL[cat]) cat="all";
+
+const $=id=>document.getElementById(id);
+const WD=["日","月","火","水","木","金","土"];
+function pad(n){return String(n).padStart(2,"0")}
+function jst(d){return new Date(d.toLocaleString("en-US",{timeZone:"Asia/Tokyo"}))}
+function ago(iso){
+  if(!iso) return "—";
+  let s=Math.max(0,Math.floor((Date.now()-new Date(iso).getTime())/1000));
+  if(s<60) return s+"秒前";
+  const m=Math.floor(s/60); if(m<60) return m+"分"+pad(s%60)+"秒前";
+  const h=Math.floor(m/60); if(h<48) return h+"時間"+pad(m%60)+"分"+pad(s%60)+"秒前";
+  return Math.floor(h/24)+"日前";
+}
+function tick(){
+  const n=jst(new Date());
+  $("clock").textContent=pad(n.getHours())+":"+pad(n.getMinutes())+":"+pad(n.getSeconds());
+  $("today").textContent=n.getFullYear()+"年"+(n.getMonth()+1)+"月"+n.getDate()+"日（"+WD[n.getDay()]+"） 日本時間";
+  $("lastRun").textContent="最終取得: "+(meta&&meta.lastRun? fmt(meta.lastRun)+"（"+ago(meta.lastRun)+"）" : "—");
+}
+function fmt(iso){const d=jst(new Date(iso));return (d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds())}
+setInterval(tick,1000); tick();
+
+function renderTabs(){
+  const counts={all:items.length}; items.forEach(i=>counts[i.cat]=(counts[i.cat]||0)+1);
+  $("tabs").innerHTML="";
+  CATS.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="tab";b.type="button";b.id="tab-"+c.id;
+    b.setAttribute("aria-pressed",String(c.id===cat));
+    b.innerHTML="<span></span><span class='n'></span>";
+    b.children[0].textContent=c.label; b.children[1].textContent=counts[c.id]||0;
+    b.onclick=()=>{cat=c.id;store.set("nd-cat",cat);render()};
+    $("tabs").appendChild(b);
+  });
+}
+function dayLabel(ds){
+  const [y,m,d]=ds.split("-").map(Number); const dt=new Date(y,m-1,d);
+  const t=jst(new Date()); const today=new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  const diff=Math.round((today-dt)/864e5);
+  const rel=diff===0?"今日":diff===1?"昨日":"";
+  return {main:(rel? rel+" · ":"")+m+"月"+d+"日（"+WD[dt.getDay()]+"）"};
+}
+function render(){
+  renderTabs();
+  const term=q.trim().toLowerCase();
+  const list=items.filter(i=>(cat==="all"||i.cat===cat)&&(!term||(i.title+" "+(i.summary||"")+" "+(i.source||"")).toLowerCase().includes(term)));
+  const main=$("main"); main.innerHTML="";
+  if(!list.length){
+    const e=document.createElement("div");e.className="empty";
+    e.innerHTML=items.length?"<b>該当する記事はありません</b>カテゴリやキーワードを変えてみてください。":"<b>まだ記事がありません</b>次回の自動取得で記事が追加されると、ここにすぐ表示されます。";
+    main.appendChild(e);return;
+  }
+  const groups={};list.forEach(i=>{(groups[i.date||"0000-00-00"]??=[]).push(i)});
+  Object.keys(groups).sort().reverse().forEach(ds=>{
+    const sec=document.createElement("section");sec.className="day";
+    const h=document.createElement("h2");
+    h.textContent=ds==="0000-00-00"?"日付不明":dayLabel(ds).main;
+    const sm=document.createElement("small");sm.textContent=groups[ds].length+"件";h.appendChild(sm);
+    const ul=document.createElement("ul");ul.className="list";
+    groups[ds].sort((a,b)=>(b.addedAt||"").localeCompare(a.addedAt||"")).forEach(i=>{
+      const li=document.createElement("li");li.className="item"+(readSet.has(i.id)?" read":"");
+      const chip=document.createElement("span");chip.className="chip "+i.cat;chip.textContent=LABEL[i.cat]||i.cat;
+      const body=document.createElement("div");body.className="body";
+      const markRead=()=>{readSet.add(i.id);store.set("nd-read",[...readSet].slice(-1500));li.classList.add("read")};
+      const a=document.createElement("a");a.className="ttl";a.href=i.url;a.target="_blank";a.rel="noopener";a.textContent=i.title;
+      a.addEventListener("click",markRead);
+      body.appendChild(a);
+      if(i.summary){const p=document.createElement("p");p.className="sum";p.textContent=i.summary;body.appendChild(p)}
+      const m=document.createElement("div");m.className="meta";
+      if(i.addedAt && Date.now()-new Date(i.addedAt).getTime()<864e5 && !readSet.has(i.id)){const n=document.createElement("span");n.className="new";n.textContent="NEW";m.appendChild(n)}
+      const s=document.createElement("span");s.textContent=i.source||"";m.appendChild(s);
+      const mo=document.createElement("a");mo.className="more";mo.href=i.url;mo.target="_blank";mo.rel="noopener";
+      mo.textContent="詳しく読む ↗";mo.setAttribute("aria-label",i.title+" の元記事を開く");mo.addEventListener("click",markRead);
+      m.appendChild(mo);
+      body.appendChild(m);
+      li.append(chip,body);ul.appendChild(li);
+    });
+    sec.append(h,ul);main.appendChild(sec);
+  });
+}
+$("q").addEventListener("input",e=>{q=e.target.value;render()});
+$("clearRead").onclick=()=>{readSet=new Set();store.set("nd-read",[]);render()};
+render();
+
+function setStatus(live,text){$("dot").classList.toggle("live",live);$("status").textContent=text}
+// データの取り込み：claude.ai ではライブのデータベース、GitHub Pages では news.json を1分ごとに確認
+async function fromJson(){
+  try{
+    const r=await fetch("news.json?t="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j=await r.json();
+    items=(j.items||[]).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    meta={lastRun:j.lastRun};
+    setStatus(true,"自動更新中（1分ごとに確認）");render();tick();
+  }catch(e){ if(!items.length) setStatus(false,"記事データを読み込めません"); }
+}
+(async()=>{
+  const db=window.claude? await window.claude.use("db"):null;
+  if(!db){ fromJson(); setInterval(fromJson,60000); return }
+  db.collection("items").orderBy("date","desc").limit(1000).onSnapshot(snap=>{
+    items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    connected=true;setStatus(true,"ライブ更新中");render();
+  },()=>setStatus(false,"接続が切れました。再読み込みしてください"));
+  db.doc("meta/status").onSnapshot(s=>{meta=s.exists?s.data():null;tick()},()=>{});
+})();
+</script>
+
+</body>
+</html>
