@@ -100,6 +100,7 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
 .item.read .ttl{color:var(--muted);font-weight:500}
 .sum{margin:5px 0 0;color:var(--ink);font-size:14.5px;line-height:1.75;max-width:65ch}
 .item.read .sum{color:var(--muted)}
+.basis{display:block;margin-top:4px;font-size:11.5px;color:var(--muted)}
 .meta{margin-top:6px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
 .more{color:var(--accent);font-weight:700;text-decoration:none;font-size:13px;margin-left:auto;white-space:nowrap}
 .more:hover{text-decoration:underline}
@@ -256,6 +257,7 @@ function render(){
       let sumBtn=null;
       if(i.summary){
         const p=document.createElement("p");p.className="sum";p.id="sum-"+i.id;p.textContent=i.summary;
+        if(i.basis==="background"){const nt=document.createElement("span");nt.className="basis";nt.textContent="社説の本文は有料のため、見出しの主張と報道で確認できた背景をもとにまとめています。";p.appendChild(nt)}
         const open=allOpen||openSum.has(i.id); p.hidden=!open;
         sumBtn=document.createElement("button");sumBtn.type="button";sumBtn.className="sumbtn";
         sumBtn.setAttribute("aria-controls",p.id);sumBtn.setAttribute("aria-expanded",String(open));

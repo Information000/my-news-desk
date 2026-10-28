@@ -17,12 +17,26 @@ ALTS = [("米連邦公開市場委員会（FOMC）", "FOMC"), ("欧州中央銀�
         ("日経平均株価", "日経平均"), ("ことが分かった", "と分かった"), ("と発表した", "と公表した"),
         ("1年前と比べると", "前年比で"), ("情報処理推進機構", "IPA")]
 
+# 短い表現を、意味を変えずに少し長くできる言い換え（短い表現, 長い表現）
+EXPAND = [("社説は", "毎日新聞の社説は"), ("だ。", "である。")]
+
 def micro(text):
     """〔〕の外にある副詞を、価値の低い任意部分として印をつける（各語の最初の1回）。
     言い換え（長い表現｜短い表現）は〈A|B〉として印をつける。"""
     for a, b in ALTS:
         if a in text and "〈" + a not in text:
             text = text.replace(a, "〈" + a + "|" + b + "〉", 1)
+    for short, long in EXPAND:
+        if long in text: continue
+        # 〔〕や〈〉の外で最初に出てくる短い表現を言い換え候補にする
+        parts = re.split(r"(〔.*?〕|〈.*?〉)", text)
+        for i, p in enumerate(parts):
+            if p.startswith(("〔", "〈")): continue
+            j = p.find(short)
+            if j >= 0:
+                parts[i] = p[:j] + "〈" + long + "|" + short + "〉" + p[j+len(short):]
+                break
+        text = "".join(parts)
     parts = re.split(r"(〔.*?〕)", text)
     used = set()
     for i, p in enumerate(parts):
