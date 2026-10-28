@@ -20,7 +20,7 @@
   --c-law:#0f6b5c; --c-law-bg:#e1f3ef;
   --c-cy:#b4232f; --c-cy-bg:#fbe5e6;
   --c-mk:#1d5fa8; --c-mk-bg:#e3eefa;
-  --new:#c2410c;
+  --new:#c2410c; --scrim:rgba(17,21,29,.55); --start-bg:#1b2a55; --start-ink:#f3f5fb; --start-muted:#b9c2dc; --start-accent:#ffd27a;
   --f-display:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
   --f-body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
@@ -33,7 +33,7 @@
   --c-law:#6fd3bd; --c-law-bg:#14312b;
   --c-cy:#ff8a92; --c-cy-bg:#3a1c20;
   --c-mk:#7fb6f5; --c-mk-bg:#16283d;
-  --new:#fb923c; color-scheme:dark}}
+  --new:#fb923c; --scrim:rgba(0,0,0,.65); --start-bg:#0c1222; --start-ink:#e7eaf0; --start-muted:#9aa3b2; --start-accent:#ffd27a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#11151d; --surface:#181e29; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2a3240;
   --accent:#8ea8ff; --accent-soft:#1f2a46;
@@ -42,7 +42,7 @@
   --c-law:#6fd3bd; --c-law-bg:#14312b;
   --c-cy:#ff8a92; --c-cy-bg:#3a1c20;
   --c-mk:#7fb6f5; --c-mk-bg:#16283d;
-  --new:#fb923c; color-scheme:dark}
+  --new:#fb923c; --scrim:rgba(0,0,0,.65); --start-bg:#0c1222; --start-ink:#e7eaf0; --start-muted:#9aa3b2; --start-accent:#ffd27a; color-scheme:dark}
 
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
@@ -110,6 +110,55 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
 .foot{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 .linkbtn{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
 @media (max-width:520px){h1{font-size:22px}.clock .t{font-size:20px}.search{flex-basis:100%}.item{grid-template-columns:1fr}.chip{grid-row:auto;justify-self:start}}
+
+/* ── スタート画面 ── */
+#start{position:fixed;inset:0;z-index:60;background:var(--start-bg);color:var(--start-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  padding-top:max(24px,env(safe-area-inset-top,0px));padding-bottom:max(24px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));transition:opacity .35s ease, visibility .35s}
+#start.gone{opacity:0;visibility:hidden}
+.st-inner{width:100%;max-width:440px;display:flex;flex-direction:column;gap:22px}
+.st-eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.24em;color:var(--start-muted)}
+.st-title{margin:0;font-family:var(--f-display);font-weight:700;font-size:40px;line-height:1.2;letter-spacing:.04em}
+.st-date{font-size:14px;color:var(--start-muted)}
+.st-clock{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:52px;font-weight:500;letter-spacing:.02em;line-height:1}
+.st-cats{display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:0;list-style:none}
+.st-cats li{font-size:12px;border:1px solid color-mix(in srgb,var(--start-ink) 30%,transparent);border-radius:999px;padding:3px 10px;color:var(--start-muted)}
+.st-status{font-size:14px;color:var(--start-muted);min-height:1.6em}
+.st-status b{color:var(--start-accent);font-size:16px}
+.st-go{align-self:flex-start;display:inline-flex;align-items:center;gap:12px;background:var(--start-ink);color:var(--start-bg);border:0;border-radius:999px;padding:14px 26px;font:700 16px var(--f-body);cursor:pointer;position:relative}
+.st-go::after{content:"";position:absolute;inset:-6px;border-radius:999px;border:2px solid var(--start-ink);opacity:.5;animation:ring 2.2s ease-out infinite}
+.st-go:focus-visible{outline:3px solid var(--start-accent);outline-offset:4px}
+@keyframes ring{0%{transform:scale(.96);opacity:.55}100%{transform:scale(1.12);opacity:0}}
+@media (prefers-reduced-motion:reduce){#start{transition:none}.st-go::after{animation:none}}
+@media (max-width:420px){.st-title{font-size:32px}.st-clock{font-size:42px}}
+
+/* ── 新着ポップアップ ── */
+.modal{position:fixed;inset:0;z-index:70;background:var(--scrim);display:flex;align-items:center;justify-content:center;
+  padding-top:max(16px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.dialog{background:var(--surface);color:var(--ink);border-radius:14px;width:100%;max-width:520px;max-height:100%;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.3);overflow:hidden}
+.dlg-head{padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+.dlg-head .ey{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;color:var(--new);font-weight:500}
+.dlg-head h2{margin:4px 0 0;font-family:var(--f-display);font-size:21px;text-wrap:balance}
+.dlg-list{list-style:none;margin:0;padding:6px 20px;overflow:auto;min-height:0}
+.dlg-list li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.dlg-list li:first-child{border-top:0}
+.dlg-list a{color:var(--ink);font-weight:700;text-decoration:none;line-height:1.5;min-width:0}
+.dlg-list a:hover{color:var(--accent);text-decoration:underline}
+.dlg-list .chip{grid-row:auto;margin-top:2px}
+.dlg-more{font-size:12px;color:var(--muted);padding:4px 20px 0}
+.dlg-foot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid var(--line)}
+.btn{border-radius:8px;padding:9px 16px;font:700 14px var(--f-body);cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:focus-visible,.dlg-list a:focus-visible,.toast button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── 起動中に届いた新着のお知らせ ── */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:65;
+  background:var(--ink);color:var(--bg);border-radius:999px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:calc(100% - 32px);font-size:14px}
+.toast button{background:var(--new);color:#fff;border:0;border-radius:999px;padding:7px 14px;font:700 13px var(--f-body);cursor:pointer;white-space:nowrap}
+.toast .x{background:transparent;color:var(--bg);padding:7px 10px}
+.filter-new{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--new);font-weight:700}
 </style>
 
 <header>
@@ -143,6 +192,44 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
   </div>
 </div>
 
+
+<div id="start" role="button" tabindex="0" aria-label="タップしてマイ・ニュースデスクを開く">
+  <div class="st-inner">
+    <div class="st-eyebrow">MY NEWS DESK</div>
+    <h1 class="st-title">マイ・<br>ニュースデスク</h1>
+    <div>
+      <div class="st-clock" id="stClock">--:--:--</div>
+      <div class="st-date" id="stDate">—</div>
+    </div>
+    <ul class="st-cats" aria-label="収録カテゴリ">
+      <li>アクセンチュア</li><li>毎日新聞 社説</li><li>情報法</li><li>サイバー</li><li>FX・株式</li>
+    </ul>
+    <div class="st-status" id="stStatus" aria-live="polite">記事を確認しています…</div>
+    <button class="st-go" id="stGo" type="button">タップして開く <span aria-hidden="true">→</span></button>
+  </div>
+</div>
+
+<div class="modal" id="newModal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="newTitle">
+    <div class="dlg-head">
+      <div class="ey">NEW ARRIVALS</div>
+      <h2 id="newTitle">新しいニュースが届いています</h2>
+    </div>
+    <ul class="dlg-list" id="newList"></ul>
+    <div class="dlg-more" id="newMore"></div>
+    <div class="dlg-foot">
+      <button class="btn" id="newClose" type="button">閉じる</button>
+      <button class="btn primary" id="newShow" type="button">新着だけを一覧で見る</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden>
+  <span id="toastText">新しいニュースが届きました</span>
+  <button type="button" id="toastOpen">見る</button>
+  <button type="button" class="x" id="toastX" aria-label="お知らせを閉じる">✕</button>
+</div>
+
 <script>
 const CATS=[
   {id:"all",label:"すべて"},
@@ -174,6 +261,11 @@ let readSet=new Set(store.get("nd-read",[]));
 cat=store.get("nd-cat","all"); if(!LABEL[cat]) cat="all";
 sub=store.get("nd-sub","all"); if(!SUBLABEL[sub]) sub="all";
 let allOpen=store.get("nd-allsum",false);
+// スタート画面と新着の管理（前回見た最新の取得時刻を、この端末に覚えておく）
+let started=false, loaded=false, pendingStart=false, onlyIds=null, liveMark=null, liveNew=[];
+const lastSeen=store.get("nd-lastSeen",null);
+const ts=i=>i.addedAt?Date.parse(i.addedAt):0;
+const newest=()=>items.reduce((m,i)=>ts(i)>m?ts(i):m,0);
 
 const $=id=>document.getElementById(id);
 const WD=["日","月","火","水","木","金","土"];
@@ -191,6 +283,7 @@ function tick(){
   const n=jst(new Date());
   $("clock").textContent=pad(n.getHours())+":"+pad(n.getMinutes())+":"+pad(n.getSeconds());
   $("today").textContent=n.getFullYear()+"年"+(n.getMonth()+1)+"月"+n.getDate()+"日（"+WD[n.getDay()]+"） 日本時間";
+  const sc=$("stClock"); if(sc){sc.textContent=$("clock").textContent; $("stDate").textContent=$("today").textContent}
   $("lastRun").textContent="最終取得: "+(meta&&meta.lastRun? fmt(meta.lastRun)+"（"+ago(meta.lastRun)+"）" : "—");
 }
 function fmt(iso){const d=jst(new Date(iso));return (d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds())}
@@ -232,8 +325,15 @@ function dayLabel(ds){
 function render(){
   renderTabs();
   const term=q.trim().toLowerCase();
-  const list=items.filter(i=>(cat==="all"||i.cat===cat)&&(cat!=="market"||sub==="all"||i.sub===sub)&&(!term||(i.title+" "+(i.summary||"")+" "+(i.source||"")).toLowerCase().includes(term)));
+  const list=items.filter(i=>(!onlyIds||onlyIds.has(i.id))&&(onlyIds||cat==="all"||i.cat===cat)&&(cat!=="market"||sub==="all"||i.sub===sub)&&(!term||(i.title+" "+(i.summary||"")+" "+(i.source||"")).toLowerCase().includes(term)));
   const main=$("main"); main.innerHTML="";
+  if(onlyIds){
+    const bar=document.createElement("div");bar.className="filter-new";
+    bar.innerHTML="<span></span><button class='btn' type='button' id='clearNew'>すべての記事に戻る</button>";
+    bar.children[0].textContent="新着 "+onlyIds.size+"件を表示しています";
+    bar.children[1].onclick=()=>{onlyIds=null;render()};
+    main.appendChild(bar);
+  }
   if(!list.length){
     const e=document.createElement("div");e.className="empty";
     e.innerHTML=items.length?"<b>該当する記事はありません</b>カテゴリやキーワードを変えてみてください。":"<b>まだ記事がありません</b>次回の自動取得で記事が追加されると、ここにすぐ表示されます。";
@@ -290,6 +390,70 @@ $("allsum").onclick=()=>{allOpen=!allOpen;store.set("nd-allsum",allOpen);openSum
 $("clearRead").onclick=()=>{readSet=new Set();store.set("nd-read",[]);render()};
 render();
 
+function freshSince(t){return items.filter(i=>ts(i)>t).sort((a,b)=>ts(b)-ts(a))}
+function onData(){
+  loaded=true;
+  if(!started){
+    const n=lastSeen?freshSince(Date.parse(lastSeen)).length:0;
+    $("stStatus").innerHTML=lastSeen
+      ? (n? "前回から新着 <b></b> 件があります" : "前回から新しい記事はありません")
+      : "記事 <b></b> 件を読み込みました";
+    const b=$("stStatus").querySelector("b"); if(b) b.textContent=lastSeen?n:items.length;
+    if(pendingStart) afterStart();
+    return;
+  }
+  // 起動中に新しい記事が届いたら、画面下にお知らせを出す
+  if(liveMark!==null){
+    const add=freshSince(liveMark);
+    if(add.length){
+      liveNew=add.concat(liveNew.filter(x=>!add.some(a=>a.id===x.id)));
+      $("toastText").textContent="新しいニュースが "+liveNew.length+" 件届きました";
+      $("toast").hidden=false;
+    }
+  }
+  liveMark=Math.max(liveMark||0,newest());
+  try{store.set("nd-lastSeen",new Date(liveMark).toISOString())}catch(e){}
+}
+function startApp(){
+  if(started) return; started=true;
+  $("start").classList.add("gone");
+  setTimeout(()=>{$("start").hidden=true},400);
+  if(loaded) afterStart(); else pendingStart=true;
+}
+function afterStart(){
+  pendingStart=false;
+  const fresh=lastSeen?freshSince(Date.parse(lastSeen)):[];
+  liveMark=newest();
+  store.set("nd-lastSeen",new Date(liveMark).toISOString());
+  if(fresh.length) openModal(fresh,"前回から新しいニュースが "+fresh.length+" 件届いています");
+}
+let modalItems=[];
+function openModal(list,title){
+  modalItems=list;
+  $("newTitle").textContent=title;
+  const ul=$("newList"); ul.innerHTML="";
+  list.slice(0,12).forEach(i=>{
+    const li=document.createElement("li");
+    const chip=document.createElement("span");chip.className="chip "+i.cat;chip.textContent=LABEL[i.cat]||i.cat;
+    const a=document.createElement("a");a.href=i.url;a.target="_blank";a.rel="noopener";a.textContent=i.title;
+    a.addEventListener("click",()=>{readSet.add(i.id);store.set("nd-read",[...readSet].slice(-1500))});
+    li.append(chip,a);ul.appendChild(li);
+  });
+  $("newMore").textContent=list.length>12?"ほか "+(list.length-12)+" 件":"";
+  $("newModal").hidden=false;
+  $("newShow").focus();
+}
+function closeModal(){$("newModal").hidden=true}
+$("start").addEventListener("click",startApp);
+$("start").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();startApp()}});
+$("newClose").onclick=closeModal;
+$("newShow").onclick=()=>{onlyIds=new Set(modalItems.map(i=>i.id));closeModal();render();window.scrollTo(0,0)};
+$("newModal").addEventListener("click",e=>{if(e.target.id==="newModal")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("newModal").hidden)closeModal()});
+$("toastOpen").onclick=()=>{$("toast").hidden=true;openModal(liveNew,"新しいニュースが "+liveNew.length+" 件届きました");liveNew=[]};
+$("toastX").onclick=()=>{$("toast").hidden=true;liveNew=[]};
+setTimeout(()=>$("stGo").focus(),50);
+
 function setStatus(live,text){$("dot").classList.toggle("live",live);$("status").textContent=text}
 // データの取り込み：claude.ai ではライブのデータベース、GitHub Pages では news.json を1分ごとに確認
 async function fromJson(){
@@ -299,7 +463,7 @@ async function fromJson(){
     const j=await r.json();
     items=(j.items||[]).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     meta={lastRun:j.lastRun};
-    setStatus(true,"自動更新中（1分ごとに確認）");render();tick();
+    setStatus(true,"自動更新中（1分ごとに確認）");render();tick();onData();
   }catch(e){ if(!items.length) setStatus(false,"記事データを読み込めません"); }
 }
 (async()=>{
@@ -307,7 +471,7 @@ async function fromJson(){
   if(!db){ fromJson(); setInterval(fromJson,60000); return }
   db.collection("items").orderBy("date","desc").limit(1000).onSnapshot(snap=>{
     items=snap.docs.map(d=>({id:d.id,...d.data()}));
-    connected=true;setStatus(true,"ライブ更新中");render();
+    connected=true;setStatus(true,"ライブ更新中");render();onData();
   },()=>setStatus(false,"接続が切れました。再読み込みしてください"));
   db.doc("meta/status").onSnapshot(s=>{meta=s.exists?s.data():null;tick()},()=>{});
 })();
