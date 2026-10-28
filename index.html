@@ -111,26 +111,79 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
 .linkbtn{background:none;border:0;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
 @media (max-width:520px){h1{font-size:22px}.clock .t{font-size:20px}.search{flex-basis:100%}.item{grid-template-columns:1fr}.chip{grid-row:auto;justify-self:start}}
 
-/* ── スタート画面 ── */
-#start{position:fixed;inset:0;z-index:60;background:var(--start-bg);color:var(--start-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;
-  padding-top:max(24px,env(safe-area-inset-top,0px));padding-bottom:max(24px,env(safe-area-inset-bottom,0px));
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));transition:opacity .35s ease, visibility .35s}
-#start.gone{opacity:0;visibility:hidden}
-.st-inner{width:100%;max-width:440px;display:flex;flex-direction:column;gap:22px}
-.st-eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.24em;color:var(--start-muted)}
-.st-title{margin:0;font-family:var(--f-display);font-weight:700;font-size:40px;line-height:1.2;letter-spacing:.04em}
-.st-date{font-size:14px;color:var(--start-muted)}
-.st-clock{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:52px;font-weight:500;letter-spacing:.02em;line-height:1}
+/* ── スタート画面（テーマに関わらず明るい配色） ── */
+[hidden]{display:none!important}
+#start{--sb:#fffaf2;--si:#1c1830;--sm:#5d5873;--k1:#ff6b5b;--k2:#ffb340;--k3:#3bb8f5;--k4:#2fd39a;--k5:#9b7bff;
+  position:fixed;inset:0;z-index:60;background:var(--sb);color:var(--si);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;color-scheme:light;
+  padding-top:max(24px,env(safe-area-inset-top,0px));padding-bottom:max(64px,calc(52px + env(safe-area-inset-bottom,0px)));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  transition:opacity .5s ease, transform .6s cubic-bezier(.2,.8,.2,1), visibility .5s}
+#start.gone{opacity:0;visibility:hidden;transform:scale(1.06)}
+.st-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;width:62vmax;height:62vmax;border-radius:50%;filter:blur(70px);opacity:.5;animation:drift 18s ease-in-out infinite alternate}
+.b1{background:var(--k1);top:-28vmax;left:-18vmax}
+.b2{background:var(--k2);top:-14vmax;right:-30vmax;animation-duration:23s;animation-delay:-7s}
+.b3{background:var(--k3);bottom:-34vmax;left:-14vmax;animation-duration:27s;animation-delay:-3s}
+.b4{background:var(--k5);bottom:-30vmax;right:-24vmax;animation-duration:21s;animation-delay:-11s;opacity:.38}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(7vmax,5vmax) scale(1.12)}100%{transform:translate(-5vmax,9vmax) scale(.94)}}
+.st-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(28,24,48,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(28,24,48,.07) 1px,transparent 1px);
+  background-size:34px 34px;-webkit-mask-image:radial-gradient(ellipse at 50% 45%,#000 20%,transparent 72%);mask-image:radial-gradient(ellipse at 50% 45%,#000 20%,transparent 72%);animation:gridpan 30s linear infinite}
+@keyframes gridpan{to{background-position:34px 34px,34px 34px}}
+.spark{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 12px 3px rgba(255,255,255,.9);opacity:0;animation:twinkle 4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
+.st-inner{position:relative;width:100%;max-width:460px;display:flex;flex-direction:column;gap:20px;padding:30px 26px 26px;border-radius:28px;
+  background:rgba(255,255,255,.58);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 34px 80px -24px rgba(70,40,110,.38)}
+.rise{opacity:0;transform:translateY(16px);animation:rise .7s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--d,0) * 90ms + 120ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+.st-eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.24em;color:var(--sm)}
+.st-live{width:8px;height:8px;border-radius:50%;background:var(--k1);box-shadow:0 0 0 0 rgba(255,107,91,.6);animation:live 1.8s ease-out infinite}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(255,107,91,.55)}100%{box-shadow:0 0 0 10px rgba(255,107,91,0)}}
+.st-title{margin:0;font-family:var(--f-display);font-weight:800;font-size:42px;line-height:1.15;letter-spacing:.03em}
+.grad{background:linear-gradient(100deg,var(--k1),var(--k2) 30%,var(--k5) 60%,var(--k3) 85%,var(--k1));background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:flow 7s linear infinite}
+@keyframes flow{to{background-position:-250% 0}}
+.st-clock{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:54px;font-weight:500;letter-spacing:.01em;line-height:1}
+.st-clock i{font-style:normal;color:var(--k1);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+.st-date{margin-top:6px;font-size:14px;color:var(--sm)}
 .st-cats{display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:0;list-style:none}
-.st-cats li{font-size:12px;border:1px solid color-mix(in srgb,var(--start-ink) 30%,transparent);border-radius:999px;padding:3px 10px;color:var(--start-muted)}
-.st-status{font-size:14px;color:var(--start-muted);min-height:1.6em}
-.st-status b{color:var(--start-accent);font-size:16px}
-.st-go{align-self:flex-start;display:inline-flex;align-items:center;gap:12px;background:var(--start-ink);color:var(--start-bg);border:0;border-radius:999px;padding:14px 26px;font:700 16px var(--f-body);cursor:pointer;position:relative}
-.st-go::after{content:"";position:absolute;inset:-6px;border-radius:999px;border:2px solid var(--start-ink);opacity:.5;animation:ring 2.2s ease-out infinite}
-.st-go:focus-visible{outline:3px solid var(--start-accent);outline-offset:4px}
-@keyframes ring{0%{transform:scale(.96);opacity:.55}100%{transform:scale(1.12);opacity:0}}
-@media (prefers-reduced-motion:reduce){#start{transition:none}.st-go::after{animation:none}}
-@media (max-width:420px){.st-title{font-size:32px}.st-clock{font-size:42px}}
+.st-cats li{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:#fff;border-radius:999px;padding:5px 11px 5px 9px;
+  box-shadow:0 2px 8px -2px rgba(60,40,100,.18);color:var(--si)}
+.st-cats li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.st-cats b{font-family:var(--f-mono);font-weight:500;color:var(--sm);font-size:11px}
+.st-status{font-size:14px;color:var(--sm);min-height:1.6em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.st-status b{display:inline-block;background:linear-gradient(135deg,var(--k1),var(--k2));color:#fff;font-family:var(--f-mono);font-size:15px;font-weight:500;
+  border-radius:999px;padding:1px 10px;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.4)}100%{transform:scale(1)}}
+.st-go{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;width:100%;border:0;border-radius:999px;padding:16px 26px;
+  font:700 17px var(--f-body);letter-spacing:.06em;color:#fff;cursor:pointer;overflow:hidden;
+  background:linear-gradient(100deg,var(--k1),var(--k2),var(--k5),var(--k1));background-size:300% 100%;animation:flow 6s linear infinite;
+  box-shadow:0 14px 30px -10px rgba(255,107,91,.7)}
+.st-go.rise{animation:rise .7s cubic-bezier(.2,.8,.2,1) forwards,flow 6s linear infinite;animation-delay:calc(var(--d,0) * 90ms + 120ms),0s}
+.st-go::before{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite 1.4s}
+@keyframes shine{0%{left:-60%}55%,100%{left:130%}}
+.st-go .arr{display:inline-block;animation:nudge 1.4s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateX(5px)}}
+.st-go:focus{outline:none}.st-go:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.st-hint{text-align:center;font-size:12px;color:var(--sm);margin-top:-8px}
+.st-ticker{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:0;height:calc(44px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--si);color:#fff;font-size:13px;overflow:hidden}
+.st-ticker .lab{flex:none;align-self:stretch;display:flex;align-items:center;padding:0 14px;background:var(--k1);font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;font-weight:500}
+.st-ticker .track{flex:1;overflow:hidden;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.st-ticker .run{display:inline-block;padding-left:24px;animation:marquee var(--dur,60s) linear infinite}
+.st-ticker .run span{margin-right:28px}
+.st-ticker .run span::before{content:"◆";color:var(--k2);margin-right:10px;font-size:10px}
+@keyframes marquee{to{transform:translateX(-100%)}}
+@media (prefers-reduced-motion:reduce){#start{transition:none}#start *,#start *::before,#start *::after{animation:none!important}.rise{opacity:1;transform:none}}
+@media (max-width:420px){.st-title{font-size:34px}.st-clock{font-size:44px}.st-inner{padding:24px 20px 22px;gap:18px}}
+@media (max-height:640px){.st-inner{gap:12px;padding-block:18px}.st-title{font-size:30px}.st-clock{font-size:38px}}
+/* ヘッダーの「スタート画面へ」ボタン */
+.home{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px 5px 10px;
+  font:700 12px var(--f-body);cursor:pointer;margin-bottom:6px}
+.home:hover{border-color:var(--accent);color:var(--accent)}
+.home:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.home svg{width:14px;height:14px}
 
 /* ── 新着ポップアップ ── */
 .modal{position:fixed;inset:0;z-index:70;background:var(--scrim);display:flex;align-items:center;justify-content:center;
@@ -165,6 +218,7 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
   <div class="wrap">
     <div class="top">
       <div>
+        <button class="home" id="toStart" type="button" aria-label="スタート画面に戻る"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></svg>スタート画面</button>
         <h1>マイ・ニュースデスク</h1>
         <div class="date-line" id="today">—</div>
       </div>
@@ -194,19 +248,27 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
 
 
 <div id="start" role="button" tabindex="0" aria-label="タップしてマイ・ニュースデスクを開く">
+  <div class="st-bg" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="blob b4"></span>
+    <div class="st-grid"></div>
+    <span class="spark" style="top:14%;left:18%;animation-delay:.2s"></span>
+    <span class="spark" style="top:22%;right:16%;animation-delay:1.4s"></span>
+    <span class="spark" style="bottom:24%;left:10%;animation-delay:2.3s"></span>
+    <span class="spark" style="bottom:18%;right:22%;animation-delay:3.1s"></span>
+  </div>
   <div class="st-inner">
-    <div class="st-eyebrow">MY NEWS DESK</div>
-    <h1 class="st-title">マイ・<br>ニュースデスク</h1>
-    <div>
+    <div class="st-eyebrow rise" style="--d:0"><span class="st-live"></span>MY NEWS DESK · LIVE</div>
+    <h1 class="st-title rise" style="--d:1">マイ・<br><span class="grad">ニュースデスク</span></h1>
+    <div class="rise" style="--d:2">
       <div class="st-clock" id="stClock">--:--:--</div>
       <div class="st-date" id="stDate">—</div>
     </div>
-    <ul class="st-cats" aria-label="収録カテゴリ">
-      <li>アクセンチュア</li><li>毎日新聞 社説</li><li>情報法</li><li>サイバー</li><li>FX・株式</li>
-    </ul>
-    <div class="st-status" id="stStatus" aria-live="polite">記事を確認しています…</div>
-    <button class="st-go" id="stGo" type="button">タップして開く <span aria-hidden="true">→</span></button>
+    <ul class="st-cats rise" style="--d:3" id="stCats" aria-label="収録カテゴリと記事数"></ul>
+    <div class="st-status rise" style="--d:4" id="stStatus" aria-live="polite">記事を確認しています…</div>
+    <button class="st-go rise" style="--d:5" id="stGo" type="button"><span>タップして開く</span><span class="arr" aria-hidden="true">→</span></button>
+    <div class="st-hint rise" style="--d:6">画面のどこをタップしても開きます</div>
   </div>
+  <div class="st-ticker" aria-hidden="true"><span class="lab">LATEST</span><div class="track"><div class="run" id="stRun"></div></div></div>
 </div>
 
 <div class="modal" id="newModal" hidden>
@@ -263,7 +325,7 @@ sub=store.get("nd-sub","all"); if(!SUBLABEL[sub]) sub="all";
 let allOpen=store.get("nd-allsum",false);
 // スタート画面と新着の管理（前回見た最新の取得時刻を、この端末に覚えておく）
 let started=false, loaded=false, pendingStart=false, onlyIds=null, liveMark=null, liveNew=[];
-const lastSeen=store.get("nd-lastSeen",null);
+let lastSeen=store.get("nd-lastSeen",null), hideTimer=null;
 const ts=i=>i.addedAt?Date.parse(i.addedAt):0;
 const newest=()=>items.reduce((m,i)=>ts(i)>m?ts(i):m,0);
 
@@ -283,7 +345,7 @@ function tick(){
   const n=jst(new Date());
   $("clock").textContent=pad(n.getHours())+":"+pad(n.getMinutes())+":"+pad(n.getSeconds());
   $("today").textContent=n.getFullYear()+"年"+(n.getMonth()+1)+"月"+n.getDate()+"日（"+WD[n.getDay()]+"） 日本時間";
-  const sc=$("stClock"); if(sc){sc.textContent=$("clock").textContent; $("stDate").textContent=$("today").textContent}
+  const sc=$("stClock"); if(sc&&!$("start").hidden){sc.innerHTML=pad(n.getHours())+"<i>:</i>"+pad(n.getMinutes())+"<i>:</i>"+pad(n.getSeconds()); $("stDate").textContent=$("today").textContent}
   $("lastRun").textContent="最終取得: "+(meta&&meta.lastRun? fmt(meta.lastRun)+"（"+ago(meta.lastRun)+"）" : "—");
 }
 function fmt(iso){const d=jst(new Date(iso));return (d.getMonth()+1)+"/"+d.getDate()+" "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds())}
@@ -394,11 +456,7 @@ function freshSince(t){return items.filter(i=>ts(i)>t).sort((a,b)=>ts(b)-ts(a))}
 function onData(){
   loaded=true;
   if(!started){
-    const n=lastSeen?freshSince(Date.parse(lastSeen)).length:0;
-    $("stStatus").innerHTML=lastSeen
-      ? (n? "前回から新着 <b></b> 件があります" : "前回から新しい記事はありません")
-      : "記事 <b></b> 件を読み込みました";
-    const b=$("stStatus").querySelector("b"); if(b) b.textContent=lastSeen?n:items.length;
+    updateStart();
     if(pendingStart) afterStart();
     return;
   }
@@ -414,10 +472,43 @@ function onData(){
   liveMark=Math.max(liveMark||0,newest());
   try{store.set("nd-lastSeen",new Date(liveMark).toISOString())}catch(e){}
 }
+const START_COLORS={accenture:"var(--k5)",editorial:"var(--k1)",infolaw:"var(--k3)",cyber:"var(--k4)",market:"var(--k2)"};
+function updateStart(){
+  // 新着の件数
+  const n=lastSeen?freshSince(Date.parse(lastSeen)).length:0;
+  $("stStatus").innerHTML=lastSeen
+    ? (n? "前回から新着 <b></b> 件があります" : "前回から新しい記事はありません")
+    : "記事 <b></b> 件を読み込みました";
+  const b=$("stStatus").querySelector("b"); if(b) b.textContent=lastSeen?n:items.length;
+  // カテゴリごとの記事数
+  const ul=$("stCats"); ul.innerHTML="";
+  CATS.filter(c=>c.id!=="all").forEach(c=>{
+    const li=document.createElement("li"); li.style.setProperty("--c",START_COLORS[c.id]||"var(--k3)");
+    li.append(c.label+" "); const k=document.createElement("b"); k.textContent=items.filter(i=>i.cat===c.id).length; li.appendChild(k); ul.appendChild(li);
+  });
+  // 下の帯に最新の見出しを流す
+  const run=$("stRun"); run.innerHTML="";
+  const latest=[...items].sort((x,y)=>ts(y)-ts(x)||(y.date||"").localeCompare(x.date||"")).slice(0,12);
+  latest.forEach(i=>{const sp=document.createElement("span");sp.textContent=i.title;run.appendChild(sp)});
+  const len=latest.reduce((a,i)=>a+i.title.length,0);
+  run.style.setProperty("--dur",Math.max(40,Math.round(len*0.28))+"s");
+}
+function goStart(){
+  closeModal(); $("toast").hidden=true; liveNew=[];
+  clearTimeout(hideTimer);
+  lastSeen=store.get("nd-lastSeen",null); started=false; pendingStart=false;
+  const st=$("start");
+  // 入場アニメーションを最初から再生する
+  st.querySelectorAll(".rise").forEach(el=>{el.style.animation="none";void el.offsetWidth;el.style.animation=""});
+  st.hidden=false; void st.offsetWidth; st.classList.remove("gone");
+  if(loaded) updateStart(); tick();
+  window.scrollTo(0,0);
+  setTimeout(()=>$("stGo").focus(),50);
+}
 function startApp(){
   if(started) return; started=true;
   $("start").classList.add("gone");
-  setTimeout(()=>{$("start").hidden=true},400);
+  hideTimer=setTimeout(()=>{$("start").hidden=true},550);
   if(loaded) afterStart(); else pendingStart=true;
 }
 function afterStart(){
@@ -451,6 +542,7 @@ $("newShow").onclick=()=>{onlyIds=new Set(modalItems.map(i=>i.id));closeModal();
 $("newModal").addEventListener("click",e=>{if(e.target.id==="newModal")closeModal()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("newModal").hidden)closeModal()});
 $("toastOpen").onclick=()=>{$("toast").hidden=true;openModal(liveNew,"新しいニュースが "+liveNew.length+" 件届きました");liveNew=[]};
+$("toStart").onclick=goStart;
 $("toastX").onclick=()=>{$("toast").hidden=true;liveNew=[]};
 setTimeout(()=>$("stGo").focus(),50);
 
