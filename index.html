@@ -67,6 +67,19 @@ h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:26px;letter-s
 .tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
 .tab[aria-pressed="true"] .n{color:var(--surface);opacity:.8}
 .tab:focus-visible,.search:focus-visible,.item a:focus-visible,.more:focus-visible,.linkbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.subtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:0 12px;min-width:0}
+.subtab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:500 12px var(--f-body);padding:4px 10px;border-radius:6px;cursor:pointer;display:inline-flex;gap:5px;align-items:center}
+.subtab .n{font-family:var(--f-mono);font-size:10.5px}
+.subtab[aria-pressed="true"]{color:var(--c-mk);background:var(--c-mk-bg);border-color:var(--c-mk)}
+.subtab:focus-visible,.sumbtn:focus-visible,.allsum:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.allsum{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink);font:500 12px var(--f-body);padding:6px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.allsum[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.sumbtn{border:1px solid var(--line);background:var(--bg);color:var(--accent);font:700 12px var(--f-body);padding:3px 10px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.sumbtn:hover{border-color:var(--accent)}
+.sumbtn .arw{display:inline-block;transition:transform .15s}
+.sumbtn[aria-expanded="true"] .arw{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.sumbtn .arw{transition:none}}
+.subchip{font-size:11px;color:var(--c-mk);border:1px solid var(--c-mk-bg);background:var(--c-mk-bg);border-radius:4px;padding:0 6px}
 .search{flex:0 1 220px;min-width:0;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 10px;font:14px var(--f-body)}
 
 main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
@@ -113,7 +126,9 @@ main{padding-block:18px 48px;display:flex;flex-direction:column;gap:26px}
     <div class="controls">
       <div class="tabs" role="toolbar" aria-label="カテゴリ" id="tabs"></div>
       <input class="search" id="q" type="search" placeholder="キーワードで絞り込み" aria-label="キーワードで絞り込み">
+      <button class="allsum" id="allsum" type="button" aria-pressed="false">要約をすべて開く</button>
     </div>
+    <div class="subtabs" role="toolbar" aria-label="みんかぶの分類" id="subtabs" hidden></div>
   </div>
 </header>
 
@@ -137,11 +152,27 @@ const CATS=[
   {id:"market",label:"FX・株式"}
 ];
 const LABEL=Object.fromEntries(CATS.map(c=>[c.id,c.label]));
-let items=[], meta=null, cat="all", q="", connected=false;
+// みんかぶ FX/為替の分類（FX・株式タブの中で切り替え）
+const SUBS=[
+  {id:"all",label:"すべて"},
+  {id:"column",label:"為替ニュース/コラム"},
+  {id:"flash",label:"速報"},
+  {id:"statement",label:"要人発言"},
+  {id:"indicator",label:"経済指標"},
+  {id:"today",label:"今日の為替"},
+  {id:"outlook",label:"今後の見通し"},
+  {id:"stock",label:"株式"},
+  {id:"commodity",label:"商品/債券"}
+];
+const SUBLABEL=Object.fromEntries(SUBS.map(s=>[s.id,s.label]));
+let items=[], meta=null, cat="all", sub="all", q="", connected=false;
+const openSum=new Set();
 
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let readSet=new Set(store.get("nd-read",[]));
 cat=store.get("nd-cat","all"); if(!LABEL[cat]) cat="all";
+sub=store.get("nd-sub","all"); if(!SUBLABEL[sub]) sub="all";
+let allOpen=store.get("nd-allsum",false);
 
 const $=id=>document.getElementById(id);
 const WD=["日","月","火","水","木","金","土"];
@@ -176,6 +207,19 @@ function renderTabs(){
     b.onclick=()=>{cat=c.id;store.set("nd-cat",cat);render()};
     $("tabs").appendChild(b);
   });
+  const st=$("subtabs"); st.hidden=cat!=="market"; st.innerHTML="";
+  if(cat==="market"){
+    const sc={all:0}; items.forEach(i=>{if(i.cat==="market"){sc.all++;sc[i.sub]=(sc[i.sub]||0)+1}});
+    SUBS.forEach(s=>{
+      const b=document.createElement("button");b.className="subtab";b.type="button";b.id="sub-"+s.id;
+      b.setAttribute("aria-pressed",String(s.id===sub));
+      b.innerHTML="<span></span><span class='n'></span>";
+      b.children[0].textContent=s.label;b.children[1].textContent=sc[s.id]||0;
+      b.onclick=()=>{sub=s.id;store.set("nd-sub",sub);render()};
+      st.appendChild(b);
+    });
+  }
+  const ab=$("allsum"); ab.setAttribute("aria-pressed",String(allOpen)); ab.textContent=allOpen?"要約をすべて閉じる":"要約をすべて開く";
 }
 function dayLabel(ds){
   const [y,m,d]=ds.split("-").map(Number); const dt=new Date(y,m-1,d);
@@ -187,7 +231,7 @@ function dayLabel(ds){
 function render(){
   renderTabs();
   const term=q.trim().toLowerCase();
-  const list=items.filter(i=>(cat==="all"||i.cat===cat)&&(!term||(i.title+" "+(i.summary||"")+" "+(i.source||"")).toLowerCase().includes(term)));
+  const list=items.filter(i=>(cat==="all"||i.cat===cat)&&(cat!=="market"||sub==="all"||i.sub===sub)&&(!term||(i.title+" "+(i.summary||"")+" "+(i.source||"")).toLowerCase().includes(term)));
   const main=$("main"); main.innerHTML="";
   if(!list.length){
     const e=document.createElement("div");e.className="empty";
@@ -209,8 +253,25 @@ function render(){
       const a=document.createElement("a");a.className="ttl";a.href=i.url;a.target="_blank";a.rel="noopener";a.textContent=i.title;
       a.addEventListener("click",markRead);
       body.appendChild(a);
-      if(i.summary){const p=document.createElement("p");p.className="sum";p.textContent=i.summary;body.appendChild(p)}
+      let sumBtn=null;
+      if(i.summary){
+        const p=document.createElement("p");p.className="sum";p.id="sum-"+i.id;p.textContent=i.summary;
+        const open=allOpen||openSum.has(i.id); p.hidden=!open;
+        sumBtn=document.createElement("button");sumBtn.type="button";sumBtn.className="sumbtn";
+        sumBtn.setAttribute("aria-controls",p.id);sumBtn.setAttribute("aria-expanded",String(open));
+        sumBtn.innerHTML="<span></span><span class='arw' aria-hidden='true'>▾</span>";
+        sumBtn.children[0].textContent=open?"要約を閉じる":"要約を見る";
+        sumBtn.onclick=()=>{
+          const now=p.hidden; p.hidden=!now;
+          if(now) openSum.add(i.id); else openSum.delete(i.id);
+          sumBtn.setAttribute("aria-expanded",String(now));
+          sumBtn.children[0].textContent=now?"要約を閉じる":"要約を見る";
+        };
+        body.appendChild(p);
+      }
       const m=document.createElement("div");m.className="meta";
+      if(sumBtn) m.appendChild(sumBtn);
+      if(i.cat==="market"&&i.sub&&SUBLABEL[i.sub]){const sc=document.createElement("span");sc.className="subchip";sc.textContent=SUBLABEL[i.sub];m.appendChild(sc)}
       if(i.addedAt && Date.now()-new Date(i.addedAt).getTime()<864e5 && !readSet.has(i.id)){const n=document.createElement("span");n.className="new";n.textContent="NEW";m.appendChild(n)}
       const s=document.createElement("span");s.textContent=i.source||"";m.appendChild(s);
       const mo=document.createElement("a");mo.className="more";mo.href=i.url;mo.target="_blank";mo.rel="noopener";
@@ -223,6 +284,7 @@ function render(){
   });
 }
 $("q").addEventListener("input",e=>{q=e.target.value;render()});
+$("allsum").onclick=()=>{allOpen=!allOpen;store.set("nd-allsum",allOpen);openSum.clear();render()};
 $("clearRead").onclick=()=>{readSet=new Set();store.set("nd-read",[]);render()};
 render();
 
